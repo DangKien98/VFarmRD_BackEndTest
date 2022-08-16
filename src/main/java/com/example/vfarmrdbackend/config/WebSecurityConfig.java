@@ -1,5 +1,8 @@
 package com.example.vfarmrdbackend.config;
 
+import com.example.vfarmrdbackend.service.security.jwt.AuthEntryPointJwt;
+import com.example.vfarmrdbackend.service.security.jwt.AuthTokenFilter;
+import com.example.vfarmrdbackend.service.user.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,10 +16,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.example.vfarmrdbackend.service.user.UserDetailsServiceImpl;
-import com.example.vfarmrdbackend.service.security.jwt.AuthEntryPointJwt;
-import com.example.vfarmrdbackend.service.security.jwt.AuthTokenFilter;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -55,17 +59,36 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http.cors().and().csrf().disable()
-        .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-        .authorizeRequests().antMatchers("/swagger",
+        .authorizeRequests()
+            .antMatchers("/swagger",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/api/auth/**",
-            "/api/files/download/**")
+            "/api/files/download/**",
+            "/api/test/**")
         .permitAll()
-        .antMatchers("/api/test/**").permitAll()
-        .anyRequest().authenticated();
-
+        .anyRequest()
+            .authenticated()
+            .and()
+            .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and();
     http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
   }
+
+
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(Arrays.asList("*"));
+    configuration.setAllowedMethods(Arrays.asList("*"));
+    configuration.setAllowedHeaders(Arrays.asList("*"));
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+
+
+
+
+  }
+
 }
