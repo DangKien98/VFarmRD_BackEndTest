@@ -23,8 +23,7 @@ public class VFarmRdBackEndApplication {
                 registry.addMapping("/**")
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
-                        .allowedOrigins("*")
-                        .allowCredentials(true);
+                        .allowedOrigins("*");
             }
         };
     }
